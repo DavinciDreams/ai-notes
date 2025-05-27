@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Page</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Frontend Test Page</h1>
+    <div id="status"></div>
+    <div id="react-test"></div>
+    
+    <script>
+        // Test basic JavaScript
+        console.log('Test page loaded');
+        document.getElementById('status').innerHTML = '<div class="success">JavaScript is working</div>';
+        
+        // Test if React is available
+        fetch('http://localhost:5173/')
+            .then(response => {
+                console.log('Frontend response:', response.status);
+                return response.text();
+            })
+            .then(html => {
+                console.log('HTML length:', html.length);
+                if (html.includes('react')) {
+                    document.getElementById('react-test').innerHTML = '<div class="success">React app is serving content</div>';
+                } else {
+                    document.getElementById('react-test').innerHTML = '<div class="error">React app might not be loaded</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('react-test').innerHTML = '<div class="error">Cannot reach frontend server</div>';
+            });
+    </script>
+</body>
+</html>

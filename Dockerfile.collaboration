@@ -1,0 +1,31 @@
+# Collaboration Server Dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production
+
+# Copy source code
+COPY server/collaboration-minimal.ts ./server/
+COPY tsconfig.json ./
+
+# Install TypeScript and build
+RUN npm install -g typescript
+RUN tsc server/collaboration-minimal.ts --outDir dist/server --target es2020 --module commonjs --esModuleInterop
+
+# Create data directory
+RUN mkdir -p data/collaboration
+
+# Expose port
+EXPOSE 1234
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD nc -z localhost 1234 || exit 1
+
+# Start the collaboration server
+CMD ["node", "dist/server/collaboration-minimal.js"]
