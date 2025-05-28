@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { FileText, Palette, Mic, Search, Settings, Plus, Users, Brain } from 'lucide-react';
+import { FileText, Palette, Mic, Search, Users, Brain } from 'lucide-react';
 
 // Minimal App component to test step by step
 function MinimalApp() {

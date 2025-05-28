@@ -10,11 +10,11 @@ interface TiptapDebugProps {
 }
 
 export const TiptapDebug: React.FC<TiptapDebugProps> = ({
-  documentId,
-  userName = 'Anonymous',
-  userColor = '#3b82f6',
-  onSave,
-  onVoiceCommand,
+  // documentId,
+  // userName = 'Anonymous',
+  // userColor = '#3b82f6',
+  // onSave,
+  // onVoiceCommand,
   className = ''
 }) => {
   const [step, setStep] = useState(1);
@@ -46,11 +46,11 @@ export const TiptapDebug: React.FC<TiptapDebugProps> = ({
       </div>
     );
   }
-
   if (step === 2) {
     // Test importing Tiptap
     try {
-      const { useEditor } = require('@tiptap/react');
+      // const { useEditor } = require('@tiptap/react');
+      require('@tiptap/react');
       console.log('✅ Tiptap React imported successfully');
       
       return (
@@ -74,11 +74,11 @@ export const TiptapDebug: React.FC<TiptapDebugProps> = ({
       setError(`Tiptap import failed: ${err}`);
     }
   }
-
   if (step === 3) {
     // Test importing StarterKit
     try {
-      const StarterKit = require('@tiptap/starter-kit');
+      // const StarterKit = require('@tiptap/starter-kit');
+      require('@tiptap/starter-kit');
       console.log('✅ StarterKit imported successfully');
       
       return (

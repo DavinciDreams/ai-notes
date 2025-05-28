@@ -16,6 +16,7 @@ import ingestionRoutes from './routes/ingestion';
 import enhancedIngestionRoutes from './routes/enhancedIngestion';
 import searchRoutes from './routes/search';
 import knowledgeGraphRoutes from './routes/knowledgeGraph';
+import uploadRoutes from './routes/upload-simple';
 
 // Load environment variables
 dotenv.config();
@@ -29,7 +30,7 @@ const io = new SocketIOServer(server, {
   }
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
 
 // Initialize database
 let dbInitialized = false;
@@ -41,7 +42,9 @@ async function initializeApp() {
     console.log('✅ Database initialized successfully');
   } catch (error) {
     console.error('❌ Database initialization failed:', error);
+    console.log('⚠️  Running in limited mode without database');
     // Continue running but with limited functionality
+    dbInitialized = false;
   }
 }
 
@@ -78,6 +81,7 @@ app.use('/api/ingestion', ingestionRoutes);
 app.use('/api/enhanced-ingestion', enhancedIngestionRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/knowledge-graph', knowledgeGraphRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -93,8 +97,7 @@ app.get('/api/health', (req, res) => {
 app.get('/', (req, res) => {
   res.json({
     message: 'AI Notes Collaborative Knowledge Management API',
-    version: '1.0.0',
-    endpoints: {
+    version: '1.0.0',    endpoints: {
       health: '/api/health',
       auth: '/api/auth',
       documents: '/api/documents',
@@ -102,7 +105,8 @@ app.get('/', (req, res) => {
       ai: '/api/ai',
       ingestion: '/api/ingestion',
       enhancedIngestion: '/api/enhanced-ingestion',
-      knowledgeGraph: '/api/knowledge-graph'
+      knowledgeGraph: '/api/knowledge-graph',
+      upload: '/api/upload'
     }
   });
 });
@@ -191,14 +195,27 @@ app.use((error: any, req: Request, res: Response, next: NextFunction): void => {
 async function startServer() {
   await initializeApp();
   
-  server.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
+  const PORT_TO_USE = process.env.PORT || 3002;
+  
+  server.listen(PORT_TO_USE, () => {
+    console.log(`🚀 Server running on port ${PORT_TO_USE}`);
     console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
-    console.log(`💾 Database: ${dbInitialized ? 'Connected' : 'Disconnected'}`);
+    console.log(`💾 Database: ${dbInitialized ? 'Connected' : 'Disconnected (limited mode)'}`);
+    console.log(`🔗 API Health: http://localhost:${PORT_TO_USE}/api/health`);
   });
 }
 
-startServer().catch(console.error);
+startServer().catch((error) => {
+  console.error('❌ Failed to start server:', error);
+  // Try a different port if the current one is in use
+  if (error.code === 'EADDRINUSE') {
+    console.log('⚠️  Port in use, trying alternative port...');
+    const altPort = (parseInt(process.env.PORT || '3002') + 1);
+    server.listen(altPort, () => {
+      console.log(`🚀 Server running on alternative port ${altPort}`);
+    });
+  }
+});
 
 export default app;

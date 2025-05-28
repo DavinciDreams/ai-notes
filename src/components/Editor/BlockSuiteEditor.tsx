@@ -1,72 +1,31 @@
-import React, { useEffect, useRef } from 'react';
-import { createEmptyDoc, PageEditor } from '@blocksuite/presets';
+import React from 'react';
 
 interface BlockSuiteEditorProps {
-  onReady?: (editor: PageEditor) => void;
+  documentId?: string;
   className?: string;
+  onReady?: (editor: any) => void;
 }
 
-export const BlockSuiteEditor: React.FC<BlockSuiteEditorProps> = ({ 
-  onReady, 
-  className = '' 
+const BlockSuiteEditor: React.FC<BlockSuiteEditorProps> = ({
+  documentId = 'default',
+  className = ''
 }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const editorRef = useRef<PageEditor | null>(null);
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    try {
-      console.log('Initializing BlockSuite editor...');
-
-      // Create empty document with BlockSuite helper
-      const doc = createEmptyDoc().init();
-
-      // Create and mount the editor
-      const editor = new PageEditor();
-      editor.doc = doc;
-      
-      // Mount to container
-      containerRef.current.appendChild(editor);
-      editorRef.current = editor;
-
-      // Callback when ready
-      if (onReady) {
-        onReady(editor);
-      }
-
-      console.log('BlockSuite editor initialized successfully');
-
-    } catch (error) {
-      console.error('Failed to initialize BlockSuite editor:', error);
-    }
-
-    // Cleanup
-    return () => {
-      if (editorRef.current && containerRef.current) {
-        try {
-          containerRef.current.removeChild(editorRef.current);
-        } catch (e) {
-          // Element might already be removed
-        }
-        editorRef.current = null;
-      }
-    };
-  }, [onReady]);
-
   return (
-    <div 
-      ref={containerRef} 
-      className={`blocksuite-editor-container ${className}`}
-      style={{ 
-        width: '100%', 
-        height: '100%',
-        minHeight: '400px',
-        border: '1px solid #e5e7eb',
-        borderRadius: '8px',
-        overflow: 'auto'
-      }}
-    />
+    <div className={`border rounded-lg bg-white p-4 ${className}`}>
+      <div className="mb-4">
+        <h3 className="text-lg font-semibold text-orange-600">BlockSuite Editor (Placeholder)</h3>
+        <p className="text-gray-600 text-sm">
+          BlockSuite editor implementation placeholder. Document ID: {documentId}
+        </p>
+      </div>
+      <div className="border-2 border-dashed border-orange-300 rounded-lg p-8 text-center">
+        <p className="text-gray-500">
+          BlockSuite Editor components have been temporarily disabled due to dependency removal.
+          <br />
+          Use the Drag & Drop Editor or Slate Editor instead.
+        </p>
+      </div>
+    </div>
   );
 };
 

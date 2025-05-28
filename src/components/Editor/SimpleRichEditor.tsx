@@ -22,7 +22,7 @@ interface SimpleRichEditorProps {
 export const SimpleRichEditor: React.FC<SimpleRichEditorProps> = ({
   documentId = 'default-doc',
   userName = 'Anonymous User',
-  userId = 'anonymous',
+  // userId = 'anonymous',
   onReady,
   className = ''
 }) => {

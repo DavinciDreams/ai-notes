@@ -2,16 +2,16 @@ import { useState } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
-import { 
-  FileText, 
-  Palette, 
-  Mic, 
-  Search, 
-  Settings, 
-  Plus,
-  Users,
-  Brain
-} from 'lucide-react';
+// import { 
+//   FileText, 
+//   Palette, 
+//   Mic, 
+//   Search, 
+//   Settings, 
+//   Plus,
+//   Users,
+//   Brain
+// } from 'lucide-react';
 
 // Import actual components one by one
 import DebugEditor from './components/Editor/DebugEditor';
@@ -26,8 +26,8 @@ import DebugEditor from './components/Editor/DebugEditor';
 const queryClient = new QueryClient();
 
 function RealComponentApp() {
-  const [currentView, setCurrentView] = useState<'editor' | 'canvas' | 'knowledge' | 'search'>('editor');
-  const [showVoiceControls, setShowVoiceControls] = useState(false);
+  // const [currentView, setCurrentView] = useState<'editor' | 'canvas' | 'knowledge' | 'search'>('editor');
+  // const [showVoiceControls, setShowVoiceControls] = useState(false);
   const [testStage, setTestStage] = useState<'layout' | 'editor' | 'canvas' | 'search' | 'knowledge' | 'voice'>('layout');
 
   const TestComponent = () => {

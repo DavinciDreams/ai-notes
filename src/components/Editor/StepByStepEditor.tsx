@@ -5,7 +5,7 @@ import Collaboration from '@tiptap/extension-collaboration';
 import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
 import { HocuspocusProvider } from '@hocuspocus/provider';
 import * as Y from 'yjs';
-import { Save, Users, Mic } from 'lucide-react';
+// // import { Save, Users, Mic } from 'lucide-react';
 
 interface StepByStepEditorProps {
   documentId: string;
@@ -16,12 +16,11 @@ interface StepByStepEditorProps {
   className?: string;
 }
 
-export const StepByStepEditor: React.FC<StepByStepEditorProps> = ({
-  documentId,
+export const StepByStepEditor: React.FC<StepByStepEditorProps> = ({  documentId,
   userName = 'Anonymous',
   userColor = '#3b82f6',
   onSave,
-  onVoiceCommand,
+  // onVoiceCommand,
   className = ''
 }) => {
   const [step, setStep] = useState(1);
@@ -54,15 +53,14 @@ export const StepByStepEditor: React.FC<StepByStepEditorProps> = ({
           onConnect: () => {
             console.log('✅ WebSocket connected');
             setStatus('connected');
-          },
-          onDisconnect: () => {
+          },          onDisconnect: () => {
             console.log('❌ WebSocket disconnected');
             setStatus('disconnected');
           },
-          onStatus: ({ status }: { status: string }) => {
-            console.log('Status changed:', status);
-            setStatus(status as 'connecting' | 'connected' | 'disconnected');
-          },
+          // onStatus: ({ status }: { status: string }) => {
+          //   console.log('Status changed:', status);
+          //   setStatus(status as 'connecting' | 'connected' | 'disconnected');
+          // },
         });
 
         setProvider(hocuspocusProvider);

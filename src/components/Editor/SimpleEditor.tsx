@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Save, Users, Mic } from 'lucide-react';
@@ -15,12 +15,12 @@ interface SimpleEditorProps {
 export const SimpleEditor: React.FC<SimpleEditorProps> = ({
   documentId,
   userName = 'Anonymous',
-  userColor = '#3b82f6',
+  // userColor = '#3b82f6',
   onSave,
   onVoiceCommand,
   className = ''
 }) => {
-  const [status] = useState<'connected'>('connected');
+  // const [status] = useState<'connected'>('connected');
 
   const editor = useEditor({
     extensions: [

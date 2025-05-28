@@ -29,10 +29,11 @@ pool.on('error', (err) => {
 
 // Database schema initialization
 export const initializeDatabase = async (): Promise<void> => {
-  const client = await pool.connect();
-  
   try {
-    await client.query('BEGIN');
+    const client = await pool.connect();
+    
+    try {
+      await client.query('BEGIN');
 
     // Users table
     await client.query(`
@@ -155,15 +156,18 @@ export const initializeDatabase = async (): Promise<void> => {
       CREATE INDEX IF NOT EXISTS idx_search_history_user ON search_history(user_id);
     `);
 
-    await client.query('COMMIT');
-    console.log('🗄️ Database schema initialized successfully');
+    await client.query('COMMIT');    console.log('🗄️ Database schema initialized successfully');
 
-  } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('❌ Database initialization failed:', error);
-    throw error;
-  } finally {
-    client.release();
+    } catch (error) {
+      await client.query('ROLLBACK');
+      console.error('❌ Database initialization failed:', error);
+      throw error;
+    } finally {
+      client.release();
+    }
+  } catch (connectionError) {
+    console.error('❌ Could not connect to database:', connectionError);
+    throw connectionError;
   }
 };
 

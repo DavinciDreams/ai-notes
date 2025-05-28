@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
@@ -10,9 +10,16 @@ import {
   Settings, 
   Plus,
   Users,
-  Brain
+  Brain,
+  Blocks,
+  Edit3,
+  Move
 } from 'lucide-react';
+// Import our enhanced editors
 import SimpleRichEditor from './components/Editor/SimpleRichEditor';
+import EnhancedBlockEditor from './components/Editor/EnhancedBlockEditor';
+import SlateEditor from './components/Editor/SlateEditor';
+import DragDropEditor from './components/Editor/DragDropEditor';
 import SimpleDrawingCanvas from './components/Canvas/SimpleDrawingCanvas';
 import VoiceControls from './components/Voice/VoiceControls';
 import type { VoiceTranscriptionResult } from './services/VoiceService';
@@ -25,7 +32,15 @@ const queryClient = new QueryClient();
 function App() {
   const activeDocument = 'document-1';
   const [showVoiceControls, setShowVoiceControls] = useState(false);
-  const [currentView, setCurrentView] = useState<'editor' | 'canvas' | 'knowledge' | 'search'>('editor');
+  const [currentView, setCurrentView] = useState<'editor' | 'block-editor' | 'slate-editor' | 'dnd-editor' | 'canvas' | 'knowledge' | 'search'>('block-editor');
+  const [editorData, setEditorData] = useState<any>(null);
+
+  // Log editor data changes for debugging
+  useEffect(() => {
+    if (editorData) {
+      console.log('Editor data updated:', editorData);
+    }
+  }, [editorData]);
 
   const handleVoiceTranscription = (result: VoiceTranscriptionResult) => {
     console.log('Voice transcription:', result.text);
@@ -54,7 +69,55 @@ function App() {
             documentId={activeDocument}
             userName="Current User"
             userId="user-1"
-            onReady={(editor) => console.log('Editor ready:', editor)}
+            onReady={(editor) => console.log('Simple Editor ready:', editor)}
+            className="flex-1"
+          />
+        );
+
+      case 'block-editor':
+        return (
+          <EnhancedBlockEditor
+            documentId={activeDocument}
+            userName="Current User"
+            userId="user-1"
+            enableDragDrop={true}
+            enableMultimedia={true}
+            enableCollaboration={true}
+            onSave={(data: any) => {
+              setEditorData(data);
+              console.log('Block Editor saved:', data);
+            }}
+            onReady={(editor: any) => console.log('Block Editor ready:', editor)}
+            className="flex-1"
+          />
+        );
+
+      case 'slate-editor':
+        return (
+          <SlateEditor
+            documentId={activeDocument}
+            userName="Current User"
+            userId="user-1"
+            onSave={(data: any) => {
+              setEditorData(data);
+              console.log('Slate Editor saved:', data);
+            }}
+            onReady={() => console.log('Slate Editor ready')}
+            className="flex-1"
+          />
+        );
+
+      case 'dnd-editor':
+        return (
+          <DragDropEditor
+            documentId={activeDocument}
+            userName="Current User"
+            enableFileUpload={true}
+            onSave={(data: any) => {
+              setEditorData(data);
+              console.log('DnD Editor saved:', data);
+            }}
+            onReady={() => console.log('DnD Editor ready')}
             className="flex-1"
           />
         );
@@ -110,6 +173,42 @@ function App() {
             {/* Navigation */}
             <nav className="flex-1 p-4 space-y-2">
               <button
+                onClick={() => setCurrentView('block-editor')}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                  currentView === 'block-editor'
+                    ? 'bg-blue-50 text-blue-600'
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <Blocks className="w-5 h-5" />
+                Block Editor
+              </button>
+
+              <button
+                onClick={() => setCurrentView('dnd-editor')}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                  currentView === 'dnd-editor'
+                    ? 'bg-blue-50 text-blue-600'
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <Move className="w-5 h-5" />
+                Drag & Drop Editor
+              </button>
+
+              <button
+                onClick={() => setCurrentView('slate-editor')}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                  currentView === 'slate-editor'
+                    ? 'bg-blue-50 text-blue-600'
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <Edit3 className="w-5 h-5" />
+                Slate Editor
+              </button>
+
+              <button
                 onClick={() => setCurrentView('editor')}
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                   currentView === 'editor'
@@ -118,8 +217,10 @@ function App() {
                 }`}
               >
                 <FileText className="w-5 h-5" />
-                Notes & Documents
+                Simple Editor
               </button>
+
+              <div className="border-t border-gray-200 my-4"></div>
 
               <button
                 onClick={() => setCurrentView('canvas')}

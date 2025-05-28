@@ -1,6 +1,9 @@
 import { Server } from '@hocuspocus/server';
+import dotenv from 'dotenv';
 
-const port = process.env.COLLABORATION_PORT || 1234;
+dotenv.config();
+
+const port = process.env.COLLABORATION_PORT || 1235;
 
 // Create a simple Hocuspocus server for real-time collaboration
 const server = new Server({
