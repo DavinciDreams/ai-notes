@@ -13,7 +13,8 @@ import {
   Brain,
   Blocks,
   Edit3,
-  Move
+  Move,
+  MessageSquare
 } from 'lucide-react';
 // Import our enhanced editors
 import SimpleRichEditor from './components/Editor/SimpleRichEditor';
@@ -22,6 +23,7 @@ import SlateEditor from './components/Editor/SlateEditor';
 import DragDropEditor from './components/Editor/DragDropEditor';
 import SimpleDrawingCanvas from './components/Canvas/SimpleDrawingCanvas';
 import VoiceControls from './components/Voice/VoiceControls';
+import { VoiceNotes } from './components/Voice/VoiceNotes';
 import type { VoiceTranscriptionResult } from './services/VoiceService';
 import { SearchComponent } from './components/SearchComponent';
 import { KnowledgeGraphComponent } from './components/KnowledgeGraphComponent';
@@ -32,7 +34,7 @@ const queryClient = new QueryClient();
 function App() {
   const activeDocument = 'document-1';
   const [showVoiceControls, setShowVoiceControls] = useState(false);
-  const [currentView, setCurrentView] = useState<'editor' | 'block-editor' | 'slate-editor' | 'dnd-editor' | 'canvas' | 'knowledge' | 'search'>('block-editor');
+  const [currentView, setCurrentView] = useState<'editor' | 'block-editor' | 'slate-editor' | 'dnd-editor' | 'canvas' | 'knowledge' | 'search' | 'voice-notes'>('block-editor');
   const [editorData, setEditorData] = useState<any>(null);
 
   // Log editor data changes for debugging
@@ -153,6 +155,13 @@ function App() {
           </div>
         );
       
+      case 'voice-notes':
+        return (
+          <div className="flex-1 bg-white rounded-lg border overflow-hidden">
+            <VoiceNotes />
+          </div>
+        );
+      
       default:
         return null;
     }
@@ -247,6 +256,18 @@ function App() {
               </button>
 
               <button
+                onClick={() => setCurrentView('voice-notes')}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                  currentView === 'voice-notes'
+                    ? 'bg-blue-50 text-blue-600'
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <MessageSquare className="w-5 h-5" />
+                Voice Notes
+              </button>
+
+              <button
                 onClick={() => setShowVoiceControls(!showVoiceControls)}
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                   showVoiceControls
@@ -300,15 +321,23 @@ function App() {
                 <div>
                   <h2 className="text-lg font-semibold text-gray-900">
                     {currentView === 'editor' && 'Collaborative Editor'}
+                    {currentView === 'block-editor' && 'Block Editor'}
+                    {currentView === 'slate-editor' && 'Slate Editor'}
+                    {currentView === 'dnd-editor' && 'Drag & Drop Editor'}
                     {currentView === 'canvas' && 'Drawing Canvas'}
                     {currentView === 'knowledge' && 'Knowledge Graph'}
                     {currentView === 'search' && 'Advanced Search'}
+                    {currentView === 'voice-notes' && 'Voice Notes'}
                   </h2>
                   <p className="text-sm text-gray-600">
                     {currentView === 'editor' && 'Real-time collaborative note-taking with AI assistance'}
+                    {currentView === 'block-editor' && 'Block-based editor with multimedia and collaboration'}
+                    {currentView === 'slate-editor' && 'Rich-text editor with advanced formatting'}
+                    {currentView === 'dnd-editor' && 'Drag and drop editor with file upload support'}
                     {currentView === 'canvas' && 'Create diagrams and visual content'}
                     {currentView === 'knowledge' && 'Explore connections in your knowledge base'}
                     {currentView === 'search' && 'Find and discover content across your knowledge base'}
+                    {currentView === 'voice-notes' && 'Capture thoughts with voice transcription and smart processing'}
                   </p>
                 </div>
                 

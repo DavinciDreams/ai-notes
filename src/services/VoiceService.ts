@@ -88,15 +88,17 @@ export class VoiceService {
           noiseSuppression: true,
           autoGainControl: true
         } 
-      });
-
-      this.mediaRecorder = new MediaRecorder(this.stream, {
-        mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus') 
+      });      this.mediaRecorder = new MediaRecorder(this.stream, {
+        mimeType: MediaRecorder.isTypeSupported('audio/wav') 
+          ? 'audio/wav'
+          : MediaRecorder.isTypeSupported('audio/webm;codecs=opus') 
           ? 'audio/webm;codecs=opus'
           : MediaRecorder.isTypeSupported('audio/mp4')
           ? 'audio/mp4'
           : 'audio/webm'
       });
+
+      console.log('MediaRecorder created with MIME type:', this.mediaRecorder.mimeType);
 
       this.audioChunks = [];
 
@@ -202,7 +204,67 @@ export class VoiceService {
       console.error('Transcription error:', error);
       throw error;
     }
+  }  async transcribeAudioForNotes(audioBlob: Blob): Promise<VoiceTranscriptionResult> {
+    try {
+      console.log('VoiceService: Sending audio blob to API, size:', audioBlob.size);
+      console.log('VoiceService: Audio blob type:', audioBlob.type);
+      
+      // Debug: Check if blob has actual audio data
+      if (audioBlob.size < 1000) {
+        console.warn('VoiceService: Audio blob is very small, may be empty or corrupted');
+      }
+      
+      // Convert blob to ensure proper format if needed
+      let audioToSend = audioBlob;
+      
+      // If the blob doesn't have the right MIME type, try to fix it
+      if (!audioBlob.type.includes('audio/')) {
+        console.log('VoiceService: Fixing audio blob MIME type');
+        audioToSend = new Blob([audioBlob], { type: 'audio/wav' });
+      }      const result = await apiService.transcribeAudio(audioToSend);
+      console.log('VoiceService: Raw API response:', result);
+      console.log('VoiceService: Response type:', typeof result);
+      console.log('VoiceService: Response data:', result.data);
+      console.log('VoiceService: Response success:', result.success);
+      
+      // Handle the ApiResponse wrapper
+      let extractedText = '';
+      let confidence: number | undefined;
+      let language: string | undefined;
+      
+      if (result.success && result.data) {
+        // The API response is wrapped in ApiResponse with data property
+        extractedText = result.data.text || '';
+        confidence = result.data.confidence;
+        language = result.data.language;
+        console.log('VoiceService: Extracted from data wrapper:', { extractedText, confidence, language });
+      } else if (typeof result === 'string') {
+        // If the entire response is a string, use it as text
+        extractedText = (result as string).trim();
+        console.log('VoiceService: Using string response as text:', extractedText);
+      } else {
+        // Fallback: try to extract directly from response
+        console.log('VoiceService: Fallback extraction, result:', result);
+        extractedText = (result as any).text || '';
+        confidence = (result as any).confidence;
+        language = (result as any).language;
+      }
+      
+      console.log('VoiceService: Final extracted text:', extractedText);
+      
+      // Return raw transcription without command processing
+      return {
+        text: extractedText,
+        confidence: confidence,
+        language: language,
+        isCommand: false
+      };
+    } catch (error) {
+      console.error('Transcription error:', error);
+      throw error;
+    }
   }
+
   async startContinuousRecording(
     onTranscription: (result: VoiceTranscriptionResult) => void,
     options: {

@@ -2,6 +2,18 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"label": "start-backend",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"dev:backend"
+			],
+			"group": "build",
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
 			"label": "Start Frontend Dev Server",
 			"type": "shell",
 			"command": "npm",

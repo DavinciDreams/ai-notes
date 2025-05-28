@@ -124,9 +124,8 @@ interface IngestionStats {
 class ApiService {
   private baseURL: string;
   private token: string | null = null;
-
   constructor() {
-    this.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+    this.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3002/api';
     this.token = localStorage.getItem('authToken');
   }
 
@@ -362,20 +361,31 @@ class ApiService {
     return this.request(`/knowledge-graph/nodes/${nodeId}`, {
       method: 'DELETE',
     });
-  }
-
-  // AI endpoints
-  async transcribeAudio(audioBlob: Blob): Promise<ApiResponse<{ text: string }>> {
+  }  // AI endpoints
+  async transcribeAudio(audioBlob: Blob): Promise<ApiResponse<{ 
+    text: string; 
+    confidence?: number; 
+    language?: string; 
+    segments?: Array<{start: number; end: number; text: string}> 
+  }>> {
+    console.log('ApiService: Preparing audio for transcription, size:', audioBlob.size, 'type:', audioBlob.type);
+    
     const formData = new FormData();
-    formData.append('audio', audioBlob);
+    formData.append('audio', audioBlob, 'recording.wav');
 
+    console.log('ApiService: Sending request to:', `${this.baseURL}/ai/transcribe`);
     return fetch(`${this.baseURL}/ai/transcribe`, {
       method: 'POST',
       headers: {
         Authorization: this.token ? `Bearer ${this.token}` : '',
       },
       body: formData,
-    }).then(res => res.json());
+    }).then(async res => {
+      console.log('ApiService: Response status:', res.status);
+      const data = await res.json();
+      console.log('ApiService: Response data:', data);
+      return data;
+    });
   }
 
   async generateText(prompt: string, model?: string): Promise<ApiResponse<{ text: string }>> {

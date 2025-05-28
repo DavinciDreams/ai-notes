@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Notes Fix Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .status { padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .status.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status.info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        .transcription { background: #f8f9fa; padding: 15px; border-radius: 4px; margin: 10px 0; min-height: 50px; }
+        .log { background: #343a40; color: #fff; padding: 10px; border-radius: 4px; margin: 10px 0; overflow-x: auto; font-family: monospace; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Voice Notes Fix Test</h1>
+        <p>This test page verifies that the VoiceService transcription fix is working correctly.</p>
+        
+        <div id="status" class="status info">Ready to test</div>
+        
+        <button id="startRecord" onclick="startRecording()">Start Recording</button>
+        <button id="stopRecord" onclick="stopRecording()" disabled>Stop Recording</button>
+        
+        <div class="transcription">
+            <h3>Transcription Result:</h3>
+            <div id="transcriptionResult">No transcription yet</div>
+        </div>
+        
+        <div class="log">
+            <h3>Debug Log:</h3>
+            <div id="debugLog"></div>
+        </div>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+
+        function log(message) {
+            const logDiv = document.getElementById('debugLog');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}<br>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+
+        function setStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+
+        async function startRecording() {
+            try {
+                setStatus('Requesting microphone access...', 'info');
+                log('Requesting microphone access');
+                
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    } 
+                });
+                
+                log('Microphone access granted');
+                setStatus('Starting recording...', 'info');
+                
+                // Choose the best available MIME type
+                let mimeType = 'audio/webm;codecs=opus';
+                if (MediaRecorder.isTypeSupported('audio/wav')) {
+                    mimeType = 'audio/wav';
+                } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+                    mimeType = 'audio/webm';
+                }
+                
+                log(`Using MIME type: ${mimeType}`);
+                
+                mediaRecorder = new MediaRecorder(stream, { mimeType });
+                audioChunks = [];
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                        log(`Audio chunk received: ${event.data.size} bytes`);
+                    }
+                };
+                
+                mediaRecorder.onstop = async () => {
+                    log('Recording stopped, processing audio...');
+                    const audioBlob = new Blob(audioChunks, { type: mimeType });
+                    log(`Audio blob created: ${audioBlob.size} bytes, type: ${audioBlob.type}`);
+                    
+                    try {
+                        await transcribeAudio(audioBlob);
+                    } catch (error) {
+                        log(`Transcription error: ${error.message}`);
+                        setStatus(`Transcription error: ${error.message}`, 'error');
+                    }
+                };
+                
+                mediaRecorder.start(1000);
+                isRecording = true;
+                
+                document.getElementById('startRecord').disabled = true;
+                document.getElementById('stopRecord').disabled = false;
+                
+                setStatus('Recording... Click "Stop Recording" when done', 'success');
+                log('Recording started successfully');
+                
+            } catch (error) {
+                log(`Failed to start recording: ${error.message}`);
+                setStatus(`Failed to start recording: ${error.message}`, 'error');
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && isRecording) {
+                log('Stopping recording...');
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                isRecording = false;
+                
+                document.getElementById('startRecord').disabled = false;
+                document.getElementById('stopRecord').disabled = true;
+                
+                setStatus('Processing audio...', 'info');
+            }
+        }
+
+        async function transcribeAudio(audioBlob) {
+            try {
+                log(`Preparing to send audio blob: ${audioBlob.size} bytes`);
+                
+                const formData = new FormData();
+                formData.append('audio', audioBlob, 'recording.wav');
+                
+                log('Sending transcription request to API...');
+                const response = await fetch('http://localhost:3002/api/ai/transcribe', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                log(`API response status: ${response.status}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                log(`API response: ${JSON.stringify(result)}`);
+                
+                // Handle the response structure
+                let text = '';
+                let confidence;
+                let language;
+                
+                if (result.success && result.data) {
+                    // Wrapped in ApiResponse
+                    text = result.data.text || '';
+                    confidence = result.data.confidence;
+                    language = result.data.language;
+                    log('Extracted from ApiResponse wrapper');
+                } else if (result.text !== undefined) {
+                    // Direct response
+                    text = result.text || '';
+                    confidence = result.confidence;
+                    language = result.language;
+                    log('Extracted from direct response');
+                } else {
+                    log('Unknown response format');
+                }
+                
+                log(`Final transcription: "${text}"`);
+                log(`Confidence: ${confidence}, Language: ${language}`);
+                
+                // Display the result
+                const transcriptionDiv = document.getElementById('transcriptionResult');
+                if (text.trim()) {
+                    transcriptionDiv.innerHTML = `
+                        <strong>Text:</strong> "${text}"<br>
+                        <strong>Confidence:</strong> ${confidence || 'Unknown'}<br>
+                        <strong>Language:</strong> ${language || 'Unknown'}
+                    `;
+                    setStatus('Transcription completed successfully!', 'success');
+                } else {
+                    transcriptionDiv.textContent = 'No text was transcribed (empty response)';
+                    setStatus('Transcription returned empty text', 'error');
+                }
+                
+            } catch (error) {
+                log(`Transcription API error: ${error.message}`);
+                throw error;
+            }
+        }
+
+        // Initialize
+        log('Voice Notes Fix Test page loaded');
+        log('Ready to test voice transcription');
+    </script>
+</body>
+</html>

@@ -95,7 +95,6 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-
   # Ollama for local LLM
   ollama:
     image: ollama/ollama:latest
@@ -108,6 +107,19 @@ services:
       - OLLAMA_HOST=0.0.0.0
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3  # Whisper ASR Service
+  whisper:
+    image: onerahmet/openai-whisper-asr-webservice:latest
+    container_name: ai-notes-whisper
+    ports:
+      - "9002:9000"
+    environment:
+      - ASR_MODEL=base
+      - ASR_ENGINE=openai_whisper
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/"]
       interval: 30s
       timeout: 10s
       retries: 3
