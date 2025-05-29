@@ -149,7 +149,6 @@ class ApiService {
 
     return headers;
   }
-
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
@@ -166,13 +165,26 @@ class ApiService {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || `HTTP ${response.status}`);
+        return {
+          success: false,
+          error: data.error || `HTTP ${response.status}`,
+          data: null as T
+        };
       }
 
-      return data;
+      // Wrap successful response in ApiResponse format
+      return {
+        success: true,
+        data: data as T,
+        error: undefined
+      };
     } catch (error) {
       console.error('API Request failed:', error);
-      throw error;
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Network error',
+        data: null as T
+      };
     }
   }
 
@@ -183,11 +195,14 @@ class ApiService {
       body: JSON.stringify({ email, password }),
     });
   }
-
-  async register(name: string, email: string, password: string): Promise<ApiResponse<{ token: string; user: any }>> {
+  async register(username: string, email: string, password: string, displayName?: string): Promise<ApiResponse<{ token: string; user: any }>> {
+    const body: any = { username, email, password };
+    if (displayName) {
+      body.displayName = displayName;
+    }
     return this.request('/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify(body),
     });
   }
 

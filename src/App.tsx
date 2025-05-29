@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { 
@@ -28,10 +27,14 @@ import type { VoiceTranscriptionResult } from './services/VoiceService';
 import { SearchComponent } from './components/SearchComponent';
 import { KnowledgeGraphComponent } from './components/KnowledgeGraphComponent';
 import type { Document } from './services/apiService';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { LoginPage } from './components/Auth/LoginPage';
 
 const queryClient = new QueryClient();
 
-function App() {
+// Main authenticated app component
+function AuthenticatedApp() {
+  const { user, logout } = useAuth();
   const activeDocument = 'document-1';
   const [showVoiceControls, setShowVoiceControls] = useState(false);
   const [currentView, setCurrentView] = useState<'editor' | 'block-editor' | 'slate-editor' | 'dnd-editor' | 'canvas' | 'knowledge' | 'search' | 'voice-notes'>('block-editor');
@@ -168,209 +171,292 @@ function App() {
   };
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <Router>
-        <div className="min-h-screen bg-gray-50 flex">
-          {/* Sidebar */}
-          <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
-            {/* Header */}
-            <div className="p-4 border-b border-gray-200">
-              <h1 className="text-xl font-bold text-gray-900">AI Notes</h1>
-              <p className="text-sm text-gray-600">Collaborative Knowledge Hub</p>
-            </div>
+    <>
+      <div className="min-h-screen bg-gray-50 flex">
+        {/* Sidebar */}
+        <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
+          {/* Header */}
+          <div className="p-4 border-b border-gray-200">
+            <h1 className="text-xl font-bold text-gray-900">AI Notes</h1>
+            <p className="text-sm text-gray-600">Collaborative Knowledge Hub</p>
+          </div>
 
-            {/* Navigation */}
-            <nav className="flex-1 p-4 space-y-2">
-              <button
-                onClick={() => setCurrentView('block-editor')}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                  currentView === 'block-editor'
-                    ? 'bg-blue-50 text-blue-600'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <Blocks className="w-5 h-5" />
-                Block Editor
-              </button>
-
-              <button
-                onClick={() => setCurrentView('dnd-editor')}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                  currentView === 'dnd-editor'
-                    ? 'bg-blue-50 text-blue-600'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <Move className="w-5 h-5" />
-                Drag & Drop Editor
-              </button>
-
-              <button
-                onClick={() => setCurrentView('slate-editor')}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                  currentView === 'slate-editor'
-                    ? 'bg-blue-50 text-blue-600'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <Edit3 className="w-5 h-5" />
-                Slate Editor
-              </button>
-
-              <button
-                onClick={() => setCurrentView('editor')}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                  currentView === 'editor'
-                    ? 'bg-blue-50 text-blue-600'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <FileText className="w-5 h-5" />
-                Simple Editor
-              </button>
-
-              <div className="border-t border-gray-200 my-4"></div>
-
-              <button
-                onClick={() => setCurrentView('canvas')}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                  currentView === 'canvas'
-                    ? 'bg-blue-50 text-blue-600'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <Palette className="w-5 h-5" />
-                Drawing Canvas
-              </button>
-
-              <button
-                onClick={() => setCurrentView('knowledge')}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                  currentView === 'knowledge'
-                    ? 'bg-blue-50 text-blue-600'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <Brain className="w-5 h-5" />
-                Knowledge Graph
-              </button>
-
-              <button
-                onClick={() => setCurrentView('voice-notes')}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                  currentView === 'voice-notes'
-                    ? 'bg-blue-50 text-blue-600'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <MessageSquare className="w-5 h-5" />
-                Voice Notes
-              </button>
-
-              <button
-                onClick={() => setShowVoiceControls(!showVoiceControls)}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                  showVoiceControls
-                    ? 'bg-green-50 text-green-600'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <Mic className="w-5 h-5" />
-                Voice Controls
-              </button>
-
-              <div className="pt-4 border-t border-gray-200">
-                <button 
-                  onClick={() => setCurrentView('search')}
+              {/* Navigation */}
+              <nav className="flex-1 p-4 space-y-2">
+                <button
+                  onClick={() => setCurrentView('block-editor')}
                   className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                    currentView === 'search'
+                    currentView === 'block-editor'
                       ? 'bg-blue-50 text-blue-600'
                       : 'text-gray-700 hover:bg-gray-50'
                   }`}
                 >
-                  <Search className="w-5 h-5" />
-                  Search
+                  <Blocks className="w-5 h-5" />
+                  Block Editor
                 </button>
 
-                <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
-                  <Users className="w-5 h-5" />
-                  Collaboration
+                <button
+                  onClick={() => setCurrentView('dnd-editor')}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                    currentView === 'dnd-editor'
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <Move className="w-5 h-5" />
+                  Drag & Drop Editor
                 </button>
 
-                <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
-                  <Settings className="w-5 h-5" />
-                  Settings
+                <button
+                  onClick={() => setCurrentView('slate-editor')}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                    currentView === 'slate-editor'
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <Edit3 className="w-5 h-5" />
+                  Slate Editor
                 </button>
-              </div>
-            </nav>
 
-            {/* Create New */}
-            <div className="p-4 border-t border-gray-200">
-              <button className="w-full flex items-center gap-3 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors">
-                <Plus className="w-5 h-5" />
-                Create New
-              </button>
-            </div>
-          </div>
+                <button
+                  onClick={() => setCurrentView('editor')}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                    currentView === 'editor'
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <FileText className="w-5 h-5" />
+                  Simple Editor
+                </button>
 
-          {/* Main Content */}
-          <div className="flex-1 flex flex-col">
-            {/* Top Bar */}
-            <div className="bg-white border-b border-gray-200 p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    {currentView === 'editor' && 'Collaborative Editor'}
-                    {currentView === 'block-editor' && 'Block Editor'}
-                    {currentView === 'slate-editor' && 'Slate Editor'}
-                    {currentView === 'dnd-editor' && 'Drag & Drop Editor'}
-                    {currentView === 'canvas' && 'Drawing Canvas'}
-                    {currentView === 'knowledge' && 'Knowledge Graph'}
-                    {currentView === 'search' && 'Advanced Search'}
-                    {currentView === 'voice-notes' && 'Voice Notes'}
-                  </h2>
-                  <p className="text-sm text-gray-600">
-                    {currentView === 'editor' && 'Real-time collaborative note-taking with AI assistance'}
-                    {currentView === 'block-editor' && 'Block-based editor with multimedia and collaboration'}
-                    {currentView === 'slate-editor' && 'Rich-text editor with advanced formatting'}
-                    {currentView === 'dnd-editor' && 'Drag and drop editor with file upload support'}
-                    {currentView === 'canvas' && 'Create diagrams and visual content'}
-                    {currentView === 'knowledge' && 'Explore connections in your knowledge base'}
-                    {currentView === 'search' && 'Find and discover content across your knowledge base'}
-                    {currentView === 'voice-notes' && 'Capture thoughts with voice transcription and smart processing'}
-                  </p>
+                <div className="border-t border-gray-200 my-4"></div>
+
+                <button
+                  onClick={() => setCurrentView('canvas')}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                    currentView === 'canvas'
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <Palette className="w-5 h-5" />
+                  Drawing Canvas
+                </button>
+
+                <button
+                  onClick={() => setCurrentView('knowledge')}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                    currentView === 'knowledge'
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <Brain className="w-5 h-5" />
+                  Knowledge Graph
+                </button>
+
+                <button
+                  onClick={() => setCurrentView('voice-notes')}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                    currentView === 'voice-notes'
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <MessageSquare className="w-5 h-5" />
+                  Voice Notes
+                </button>
+
+                <button
+                  onClick={() => setShowVoiceControls(!showVoiceControls)}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                    showVoiceControls
+                      ? 'bg-green-50 text-green-600'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <Mic className="w-5 h-5" />
+                  Voice Controls
+                </button>
+
+                <div className="pt-4 border-t border-gray-200">
+                  <button 
+                    onClick={() => setCurrentView('search')}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                      currentView === 'search'
+                        ? 'bg-blue-50 text-blue-600'
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Search className="w-5 h-5" />
+                    Search
+                  </button>
+
+                  <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+                    <Users className="w-5 h-5" />
+                    Collaboration
+                  </button>
+
+                  <button className="w-full flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+                    <Settings className="w-5 h-5" />
+                    Settings
+                  </button>
                 </div>
-                
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <div className="w-2 h-2 bg-green-500 rounded-full" />
-                    <span>Connected</span>
+              </nav>
+
+              {/* User Profile */}
+              <div className="p-4 border-t border-gray-200">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <span className="text-blue-600 font-medium">
+                      {user?.displayName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 truncate">
+                      {user?.displayName || 'User'}
+                    </p>
+                    <p className="text-sm text-gray-600 truncate">
+                      {user?.email}
+                    </p>
                   </div>
                 </div>
               </div>
+
+              {/* Create New */}
+              <div className="px-4 pb-4">
+                <button className="w-full flex items-center gap-3 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors">
+                  <Plus className="w-5 h-5" />
+                  Create New
+                </button>
+              </div>
             </div>
 
-            {/* Content Area */}
-            <div className="flex-1 p-6 flex gap-6">
-              <MainContent />
-              
-              {showVoiceControls && (
-                <div className="w-80">
-                  <VoiceControls
-                    onTranscription={handleVoiceTranscription}
-                    onError={handleVoiceError}
-                    className="sticky top-0"
-                  />
+            {/* Main Content */}
+            <div className="flex-1 flex flex-col">
+              {/* Top Bar */}
+              <div className="bg-white border-b border-gray-200 p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      {currentView === 'editor' && 'Collaborative Editor'}
+                      {currentView === 'block-editor' && 'Block Editor'}
+                      {currentView === 'slate-editor' && 'Slate Editor'}
+                      {currentView === 'dnd-editor' && 'Drag & Drop Editor'}
+                      {currentView === 'canvas' && 'Drawing Canvas'}
+                      {currentView === 'knowledge' && 'Knowledge Graph'}
+                      {currentView === 'search' && 'Advanced Search'}
+                      {currentView === 'voice-notes' && 'Voice Notes'}
+                    </h2>
+                    <p className="text-sm text-gray-600">
+                      {currentView === 'editor' && 'Real-time collaborative note-taking with AI assistance'}
+                      {currentView === 'block-editor' && 'Block-based editor with multimedia and collaboration'}
+                      {currentView === 'slate-editor' && 'Rich-text editor with advanced formatting'}
+                      {currentView === 'dnd-editor' && 'Drag and drop editor with file upload support'}
+                      {currentView === 'canvas' && 'Create diagrams and visual content'}
+                      {currentView === 'knowledge' && 'Explore connections in your knowledge base'}
+                      {currentView === 'search' && 'Find and discover content across your knowledge base'}
+                      {currentView === 'voice-notes' && 'Capture thoughts with voice transcription and smart processing'}
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center gap-4">
+                    {/* User Info */}
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <div className="w-2 h-2 bg-green-500 rounded-full" />
+                        <span>Connected</span>
+                      </div>
+                      
+                      <div className="h-4 w-px bg-gray-300" />
+                      
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                          <span className="text-blue-600 font-medium text-sm">
+                            {user?.displayName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
+                          </span>
+                        </div>
+                        <div className="text-sm">
+                          <p className="font-medium text-gray-900">{user?.displayName || 'User'}</p>
+                          <p className="text-gray-600">{user?.email}</p>
+                        </div>
+                      </div>
+                      
+                      <button
+                        onClick={logout}
+                        className="ml-2 px-3 py-1 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              )}
+              </div>
+
+              {/* Content Area */}
+              <div className="flex-1 p-6 flex gap-6">
+                <MainContent />
+                
+                {showVoiceControls && (
+                  <div className="w-80">
+                    <VoiceControls
+                      onTranscription={handleVoiceTranscription}
+                      onError={handleVoiceError}
+                      className="sticky top-0"
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
         
         <Toaster position="bottom-right" />
-      </Router>
+      </>
+  );
+}
+
+// Main App component that handles authentication state
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </QueryClientProvider>
   );
+}
+
+// App content that switches between login and authenticated views
+function AppContent() {
+  const { user, isLoading } = useAuth();
+  const [showLogin, setShowLogin] = useState(false);
+
+  // Show loading spinner while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login page if not authenticated or login is requested
+  if (!user || showLogin) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <LoginPage onClose={() => setShowLogin(false)} />
+        <Toaster position="bottom-right" />
+      </div>
+    );
+  }
+
+  // Show main app when authenticated
+  return <AuthenticatedApp />;
 }
 
 export default App;

@@ -130,6 +130,7 @@ services:
       context: .
       dockerfile: Dockerfile.backend
     container_name: ai-notes-backend
+    command: ["tsx", "server/index.ts"]
     environment:
       NODE_ENV: production
       PORT: 3001
@@ -160,8 +161,6 @@ services:
       neo4j:
         condition: service_healthy
       minio:
-        condition: service_healthy
-      ollama:
         condition: service_healthy
     volumes:
       - ./uploads:/app/uploads

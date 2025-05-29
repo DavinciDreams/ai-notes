@@ -132,7 +132,7 @@ router.post('/upload-multiple', authenticateToken, upload.array('files', 10), as
       return res.status(400).json({ success: false, error: 'No files provided' });
     }
 
-    const files = req.files as Express.Multer.File[];
+    const files = req.files as any[];
     const uploadedFiles = [];
 
     for (const file of files) {

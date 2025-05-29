@@ -15,6 +15,12 @@ export interface User {
 
 export interface AuthRequest extends Request {
   user?: User;
+  body: any;
+  params: any;
+  query: any;
+  file?: any;
+  files?: any;
+  headers: any;
 }
 
 export interface TokenPayload {

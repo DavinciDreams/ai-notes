@@ -18,7 +18,7 @@ COPY tsconfig.json ./
 COPY tsconfig.app.json ./
 COPY tsconfig.node.json ./
 COPY tailwind.config.js ./
-COPY postcss.config.js ./
+COPY postcss.config.cjs ./
 
 # Build the app
 RUN npm run build

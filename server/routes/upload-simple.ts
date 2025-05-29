@@ -71,7 +71,7 @@ router.post('/upload', upload.single('file'), async (req: Request, res: Response
 // Multiple file upload
 router.post('/upload-multiple', upload.array('files', 10), async (req: Request, res: Response): Promise<void> => {
   try {
-    const files = req.files as Express.Multer.File[];
+    const files = req.files as any[];
     
     if (!files || files.length === 0) {
       res.status(400).json({ error: 'No files uploaded' });

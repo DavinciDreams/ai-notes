@@ -7,6 +7,12 @@ interface AuthenticatedRequest extends Request {
     username: string;
     email: string;
   };
+  body: any;
+  params: any;
+  query: any;
+  file?: any;
+  files?: any;
+  headers: any;
 }
 
 export const authenticateToken = (

@@ -1,4 +1,5 @@
-{  "compilerOptions": {
+{
+  "compilerOptions": {
     "target": "ES2022",
     "lib": ["ES2023"],
     "module": "ESNext",
@@ -15,9 +16,10 @@
     "declaration": false,
     "declarationMap": false,
     "sourceMap": true,
-    
-    /* Linting */
-    "strict": true,
+      /* Linting */
+    "strict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true

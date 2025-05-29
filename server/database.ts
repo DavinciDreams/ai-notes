@@ -23,7 +23,7 @@ pool.on('connect', () => {
   console.log('✅ Connected to PostgreSQL database');
 });
 
-pool.on('error', (err) => {
+pool.on('error', (err: any) => {
   console.error('❌ PostgreSQL pool error:', err);
 });
 
