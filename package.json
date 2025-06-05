@@ -71,7 +71,7 @@
     "lucide-react": "^0.511.0",
     "minio": "^8.0.5",
     "morgan": "^1.10.0",
-    "multer": "^2.0.0",
+    "multer": "^2.0.1",
     "neo4j-driver": "^5.28.1",
     "pg": "^8.16.0",
     "postgresql": "^0.0.1",
