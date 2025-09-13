@@ -70,7 +70,7 @@
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.511.0",
     "minio": "^8.0.5",
-    "morgan": "^1.10.0",
+    "morgan": "^1.10.1",
     "multer": "^2.0.0",
     "neo4j-driver": "^5.28.1",
     "pg": "^8.16.0",
